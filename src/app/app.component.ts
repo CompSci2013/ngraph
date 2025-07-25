@@ -1,6 +1,8 @@
 import { Component, Input, AfterViewInit, ViewChild } from '@angular/core';
 import { RendererRegistryService } from './services/render-registry.service';
 import { DateSalesPanelComponent } from './panels/date-sales-panel/date-sales-panel.component';
+import { ProductSalesPanelComponent } from './panels/product-sales-panel/product-sales-panel.component';
+import { CompanySalesPanelComponent } from './panels/company-sales-panel/company-sales-panel.component';
 import {
   themeDracula,
   DockviewTheme,
@@ -29,14 +31,14 @@ export class AppComponent implements AfterViewInit {
       'dateSalesPanel',
       DateSalesPanelComponent
     );
-    // this.rendererRegistry.registerPanelRenderer(
-    //   'companySalesPanel',
-    //   CompanySalesPanelComponent
-    // );
-    // this.rendererRegistry.registerPanelRenderer(
-    //   'productSalesPanel',
-    //   ProductSalesPanelComponent
-    // );
+    this.rendererRegistry.registerPanelRenderer(
+      'companySalesPanel',
+      CompanySalesPanelComponent
+    );
+    this.rendererRegistry.registerPanelRenderer(
+      'productSalesPanel',
+      ProductSalesPanelComponent
+    );
 
     console.log('[Chosen Theme:]', this.chosenTheme);
 
@@ -53,25 +55,19 @@ export class AppComponent implements AfterViewInit {
       component: 'dateSalesPanel',
       position: { direction: 'left' },
     });
+
     this.dockviewContainer.addPanel({
-      id: 'date-sales-panel-2',
-      title: 'Sales by Date - Dupe',
-      component: 'dateSalesPanel',
+      id: 'company-sales-panel',
+      title: 'Sales by Company',
+      component: 'companySalesPanel',
       position: { direction: 'right' },
     });
 
-    // this.dockviewService.addPanel({
-    //   id: 'company-sales-panel',
-    //   title: 'Sales by Company',
-    //   component: 'companySalesPanel',
-    //   position: { direction: 'right' },
-    // });
-
-    // this.dockviewService.addPanel({
-    //   id: 'product-sales-panel',
-    //   title: 'Sales by Product',
-    //   component: 'productSalesPanel',
-    //   position: { direction: 'below' },
-    // });
+    this.dockviewContainer.addPanel({
+      id: 'product-sales-panel',
+      title: 'Sales by Product',
+      component: 'productSalesPanel',
+      position: { direction: 'below' },
+    });
   }
 }

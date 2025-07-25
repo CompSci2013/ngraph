@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ElementRef } from '@angular/core';
 import { DataService, SalesRecord } from '../../services/data.services';
 import { map } from 'rxjs/operators';
 import { EventBusService } from '../../services/event-bus-service';
@@ -9,14 +9,17 @@ import * as Plotly from 'plotly.js-dist-min';
   templateUrl: './company-sales-panel.component.html',
   styleUrls: ['./company-sales-panel.component.css'],
 })
-export class CompanySalesPanelComponent implements OnInit {
+export class CompanySalesPanelComponent implements OnInit, AfterViewInit {
   plotData: any[] = [];
   plotLayout: any = {};
   salesRecords: SalesRecord[] = []; // explicitly store data locally
 
+  private resizeObserver!: ResizeObserver;
+
   constructor(
     private dataService: DataService,
-    private eventBus: EventBusService
+    private eventBus: EventBusService,
+    private el: ElementRef
   ) {}
 
   ngOnInit(): void {
@@ -50,6 +53,13 @@ export class CompanySalesPanelComponent implements OnInit {
         yaxis: { title: 'Number of Sales' },
         margin: { t: 40, l: 50, r: 30, b: 60 },
       };
+
+      Plotly.newPlot(
+        this.el.nativeElement.firstChild,
+        this.plotData,
+        this.plotLayout,
+        { responsive: true }
+      );
     });
 
     // Listen explicitly for hover events
@@ -104,5 +114,40 @@ export class CompanySalesPanelComponent implements OnInit {
     if (plotElement) {
       Plotly.restyle(plotElement, { marker: { color: '#f58518' } });
     }
+  }
+  ngAfterViewInit(): void {
+    this.resizeObserver = new ResizeObserver(() => {
+      Plotly.Plots.resize(this.el.nativeElement.firstChild);
+    });
+
+    this.resizeObserver.observe(this.el.nativeElement);
+  }
+
+  onHovered(date: string): void {
+    this.eventBus.emit({ type: 'message', toPanelId: 'all', message: date });
+  }
+
+  onClicked(date: string): void {
+    this.eventBus.emit({ type: 'message', toPanelId: 'filter', message: date });
+  }
+
+  onSelected(dates: string[]): void {
+    this.eventBus.emit({
+      type: 'message',
+      toPanelId: 'multi-filter',
+      message: JSON.stringify(dates),
+    });
+  }
+
+  onZoomed(range: [string, string]): void {
+    this.eventBus.emit({
+      type: 'message',
+      toPanelId: 'zoom',
+      message: JSON.stringify(range),
+    });
+  }
+
+  onCleared(): void {
+    this.eventBus.emit({ type: 'message', toPanelId: 'filter', message: '' });
   }
 }

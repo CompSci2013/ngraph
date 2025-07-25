@@ -1,3 +1,9 @@
-<div class="panel-container">
-  <app-plotly-chart [data]="plotData" [layout]="plotLayout"></app-plotly-chart>
-</div>
+<app-histogram
+  [plotData]="plotData"
+  [plotLayout]="plotLayout"
+  (hovered)="onHovered($event)"
+  (clicked)="onClicked($event)"
+  (selected)="onSelected($event)"
+  (zoomed)="onZoomed($event)"
+  (cleared)="onCleared()"
+></app-histogram>
