@@ -10,7 +10,12 @@ import {
 } from '@angular/core';
 import { ComponentFactoryResolver } from '@angular/core';
 
-import { DockviewComponent } from 'dockview-core';
+import {
+  DockviewComponent,
+  DockviewTheme,
+  themeDracula,
+  themeVisualStudio,
+} from 'dockview-core';
 import { IContentRenderer } from 'dockview-core/dist/cjs/dockview/types';
 import { PanelStateService, PanelState } from './panel-state.service';
 import { HeaderActionsService, HeaderAction } from './header-actions.service';
@@ -42,14 +47,15 @@ export class DockviewService {
     private eventBus: EventBusService
   ) {}
 
-  initialize(container: HTMLElement, theme: string): DockviewApi {
-    if (theme) {
-      container.classList.add(theme);
-    }
+  initialize(container: HTMLElement, theme: DockviewTheme): DockviewApi {
+    // if (theme) {
+    //   document.body.classList.add(theme);
+    // }
 
     this.dockviewComponent = new DockviewComponent(container, {
       disableAutoResizing: false,
       floatingGroupBounds: 'boundedWithinViewport',
+      theme: theme,
 
       createComponent: (options: CreateComponentOptions) => {
         console.log(

@@ -8,7 +8,11 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import { DockviewComponent } from 'dockview-core';
+import {
+  DockviewComponent,
+  DockviewTheme,
+  themeVisualStudio,
+} from 'dockview-core';
 import { DockviewApi } from 'dockview-core/dist/cjs/api/component.api';
 import { IContentRenderer } from 'dockview-core/dist/cjs/dockview/types';
 import { DockviewService } from '../../services/dockview.service';
@@ -22,7 +26,7 @@ export class DockviewDefaultTabRenderer {}
 })
 export class DockviewContainerComponent implements AfterViewInit, OnDestroy {
   @ViewChild('host', { static: true }) hostElementRef!: ElementRef<HTMLElement>;
-  @Input() theme: string = '';
+  @Input() theme: DockviewTheme = themeVisualStudio; // set as default
   @Output() initialized = new EventEmitter<DockviewApi>();
 
   constructor(private dockviewService: DockviewService) {}

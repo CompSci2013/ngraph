@@ -1,3 +1,6 @@
+@import "~dockview-core/dist/styles/dockview.css";
+@import "~@vscode/codicons/dist/codicon.css";
+
 html,
 body {
   height: 100%;
@@ -5,6 +8,10 @@ body {
   padding: 0;
 }
 .dockview-theme-light,
+.dockview-theme-dark,
+.dockview-theme-replit,
+.dockview-theme-dracula,
+.dockview-theme-vs,
 adv-dockview-container {
   display: block;
   height: 100vh; /* or 100% if parent chain is 100% */
@@ -17,7 +24,7 @@ app-root {
   height: 100%;
 }
 
-.viewer,
+/* .viewer,
 adv-dockview-container,
 dv-grid-view,
 dv-dockview,
@@ -25,15 +32,15 @@ dv-dockview,
   width: 100%;
   height: 100%;
   display: block;
-}
+} */
 
-app-plotly-chart,
+/* app-plotly-chart,
 app-date-sales-panel,
 app-company-sales-panel,
 app-product-sales-panel {
   display: block;
   width: 100%;
-}
+} */
 
 .dv-content-container {
   display: flex !important;

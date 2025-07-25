@@ -49,8 +49,16 @@ export class DateSalesPanelComponent implements OnInit, AfterViewInit {
         yaxis: { title: 'Number of Sales' },
         margin: { t: 40, l: 50, r: 30, b: 60 },
       };
+
+      Plotly.newPlot(
+        this.el.nativeElement.firstChild,
+        this.plotData,
+        this.plotLayout,
+        { responsive: true }
+      );
     });
   }
+
   ngAfterViewInit(): void {
     this.resizeObserver = new ResizeObserver(() => {
       Plotly.Plots.resize(this.el.nativeElement.firstChild);

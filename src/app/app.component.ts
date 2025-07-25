@@ -1,10 +1,15 @@
-import { Component, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
-import { DockviewService } from './services/dockview.service';
+import { Component, Input, AfterViewInit, ViewChild } from '@angular/core';
 import { RendererRegistryService } from './services/render-registry.service';
-
 import { DateSalesPanelComponent } from './panels/date-sales-panel/date-sales-panel.component';
-import { CompanySalesPanelComponent } from './panels/company-sales-panel/company-sales-panel.component';
-import { ProductSalesPanelComponent } from './panels/product-sales-panel/product-sales-panel.component';
+import {
+  themeDracula,
+  DockviewTheme,
+  themeLight,
+  themeDark,
+  themeVisualStudio,
+  themeReplit,
+} from 'dockview-core';
+import { DockviewContainerComponent } from './components/dockview-container/dockview-container.component';
 
 @Component({
   selector: 'app-root',
@@ -12,12 +17,11 @@ import { ProductSalesPanelComponent } from './panels/product-sales-panel/product
   styleUrls: ['./dockview.css'],
 })
 export class AppComponent implements AfterViewInit {
-  @ViewChild('dockviewContainer', { static: true }) container!: ElementRef;
+  @Input() chosenTheme: DockviewTheme = themeDark;
+  @ViewChild(DockviewContainerComponent, { static: true })
+  dockviewContainer!: DockviewContainerComponent;
 
-  constructor(
-    private dockviewService: DockviewService,
-    private rendererRegistry: RendererRegistryService
-  ) {}
+  constructor(private rendererRegistry: RendererRegistryService) {}
 
   ngAfterViewInit(): void {
     // Register demo-specific panel components explicitly here in DEMO ONLY
@@ -25,41 +29,49 @@ export class AppComponent implements AfterViewInit {
       'dateSalesPanel',
       DateSalesPanelComponent
     );
-    this.rendererRegistry.registerPanelRenderer(
-      'companySalesPanel',
-      CompanySalesPanelComponent
-    );
-    this.rendererRegistry.registerPanelRenderer(
-      'productSalesPanel',
-      ProductSalesPanelComponent
-    );
+    // this.rendererRegistry.registerPanelRenderer(
+    //   'companySalesPanel',
+    //   CompanySalesPanelComponent
+    // );
+    // this.rendererRegistry.registerPanelRenderer(
+    //   'productSalesPanel',
+    //   ProductSalesPanelComponent
+    // );
+
+    console.log('[Chosen Theme:]', this.chosenTheme);
 
     // Initialize Dockview explicitly
-    this.dockviewService.initialize(
-      this.container.nativeElement,
-      'dockview-theme-light'
-    );
+    // this.dockviewService.initialize(
+    //   this.container.nativeElement,
+    //   this.chosenTheme
+    // );
 
     // Add panels after initialization
-    this.dockviewService.addPanel({
+    this.dockviewContainer.addPanel({
       id: 'date-sales-panel',
       title: 'Sales by Date',
       component: 'dateSalesPanel',
       position: { direction: 'left' },
     });
-
-    this.dockviewService.addPanel({
-      id: 'company-sales-panel',
-      title: 'Sales by Company',
-      component: 'companySalesPanel',
+    this.dockviewContainer.addPanel({
+      id: 'date-sales-panel-2',
+      title: 'Sales by Date - Dupe',
+      component: 'dateSalesPanel',
       position: { direction: 'right' },
     });
 
-    this.dockviewService.addPanel({
-      id: 'product-sales-panel',
-      title: 'Sales by Product',
-      component: 'productSalesPanel',
-      position: { direction: 'below' },
-    });
+    // this.dockviewService.addPanel({
+    //   id: 'company-sales-panel',
+    //   title: 'Sales by Company',
+    //   component: 'companySalesPanel',
+    //   position: { direction: 'right' },
+    // });
+
+    // this.dockviewService.addPanel({
+    //   id: 'product-sales-panel',
+    //   title: 'Sales by Product',
+    //   component: 'productSalesPanel',
+    //   position: { direction: 'below' },
+    // });
   }
 }
