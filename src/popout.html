@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Dockview Popout Window</title>
+    <link href="styles.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/dockview-core@4.4.0/dist/dockview-core.min.js"></script>
+  </head>
+  <body style="margin: 0; padding: 0; overflow: hidden">
+    <div style="width: 40px; height: 30px">
+      <p>Hellow Popout!</p>
+      <div id="dockview-container" style="width: 100vw; height: 100vh"></div>
+    </div>
+
+    <script>
+      window.addEventListener("DOMContentLoaded", () => {
+        const container = document.getElementById("dockview-container");
+
+        // Initialize Dockview in popout mode
+        const dockview = new Dockview.DockviewComponent(container, {
+          disableAutoResizing: false,
+        });
+
+        dockview.fromJSON(window.opener.__dockview_popout_state__);
+      });
+    </script>
+  </body>
+</html>

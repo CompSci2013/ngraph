@@ -1,0 +1,282 @@
+[
+  {
+    "date": "2025-04-01",
+    "company": "PaintPros",
+    "red": 61,
+    "yellow": 24,
+    "white": 81,
+    "blue": 70
+  },
+  {
+    "date": "2025-04-01",
+    "company": "ColorMasters",
+    "red": 30,
+    "yellow": 92,
+    "white": 96,
+    "blue": 84
+  },
+  {
+    "date": "2025-04-01",
+    "company": "ColorMasters",
+    "red": 84,
+    "yellow": 97,
+    "white": 33,
+    "blue": 12
+  },
+  {
+    "date": "2025-04-01",
+    "company": "PrimePaints",
+    "red": 31,
+    "yellow": 62,
+    "white": 11,
+    "blue": 97
+  },
+  {
+    "date": "2025-04-01",
+    "company": "ShadeSolutions",
+    "red": 39,
+    "yellow": 47,
+    "white": 11,
+    "blue": 73
+  },
+  {
+    "date": "2025-04-02",
+    "company": "PaintPros",
+    "red": 69,
+    "yellow": 30,
+    "white": 42,
+    "blue": 85
+  },
+  {
+    "date": "2025-04-02",
+    "company": "ColorMasters",
+    "red": 67,
+    "yellow": 31,
+    "white": 98,
+    "blue": 58
+  },
+  {
+    "date": "2025-04-02",
+    "company": "HueHouse",
+    "red": 68,
+    "yellow": 51,
+    "white": 69,
+    "blue": 89
+  },
+  {
+    "date": "2025-04-02",
+    "company": "PrimePaints",
+    "red": 24,
+    "yellow": 71,
+    "white": 71,
+    "blue": 56
+  },
+  {
+    "date": "2025-04-02",
+    "company": "ShadeSolutions",
+    "red": 71,
+    "yellow": 60,
+    "white": 64,
+    "blue": 73
+  },
+  {
+    "date": "2025-04-03",
+    "company": "PaintPros",
+    "red": 12,
+    "yellow": 60,
+    "white": 16,
+    "blue": 30
+  },
+  {
+    "date": "2025-04-03",
+    "company": "ColorMasters",
+    "red": 82,
+    "yellow": 48,
+    "white": 27,
+    "blue": 13
+  },
+  {
+    "date": "2025-04-03",
+    "company": "HueHouse",
+    "red": 98,
+    "yellow": 69,
+    "white": 23,
+    "blue": 18
+  },
+  {
+    "date": "2025-04-03",
+    "company": "PrimePaints",
+    "red": 99,
+    "yellow": 62,
+    "white": 11,
+    "blue": 93
+  },
+  {
+    "date": "2025-04-03",
+    "company": "ShadeSolutions",
+    "red": 69,
+    "yellow": 80,
+    "white": 53,
+    "blue": 17
+  },
+  {
+    "date": "2025-04-04",
+    "company": "PaintPros",
+    "red": 56,
+    "yellow": 44,
+    "white": 87,
+    "blue": 90
+  },
+  {
+    "date": "2025-04-04",
+    "company": "ColorMasters",
+    "red": 45,
+    "yellow": 59,
+    "white": 13,
+    "blue": 11
+  },
+  {
+    "date": "2025-04-04",
+    "company": "HueHouse",
+    "red": 15,
+    "yellow": 63,
+    "white": 13,
+    "blue": 63
+  },
+  {
+    "date": "2025-04-04",
+    "company": "PrimePaints",
+    "red": 72,
+    "yellow": 27,
+    "white": 99,
+    "blue": 53
+  },
+  {
+    "date": "2025-04-04",
+    "company": "ShadeSolutions",
+    "red": 43,
+    "yellow": 83,
+    "white": 71,
+    "blue": 23
+  },
+  {
+    "date": "2025-04-05",
+    "company": "PaintPros",
+    "red": 57,
+    "yellow": 24,
+    "white": 81,
+    "blue": 87
+  },
+  {
+    "date": "2025-04-05",
+    "company": "ColorMasters",
+    "red": 96,
+    "yellow": 71,
+    "white": 49,
+    "blue": 94
+  },
+  {
+    "date": "2025-04-05",
+    "company": "HueHouse",
+    "red": 89,
+    "yellow": 91,
+    "white": 62,
+    "blue": 33
+  },
+  {
+    "date": "2025-04-05",
+    "company": "PrimePaints",
+    "red": 35,
+    "yellow": 98,
+    "white": 69,
+    "blue": 50
+  },
+  {
+    "date": "2025-04-05",
+    "company": "ShadeSolutions",
+    "red": 38,
+    "yellow": 24,
+    "white": 54,
+    "blue": 74
+  },
+  {
+    "date": "2025-04-06",
+    "company": "PaintPros",
+    "red": 98,
+    "yellow": 80,
+    "white": 18,
+    "blue": 97
+  },
+  {
+    "date": "2025-04-06",
+    "company": "ColorMasters",
+    "red": 10,
+    "yellow": 17,
+    "white": 97,
+    "blue": 72
+  },
+  {
+    "date": "2025-04-06",
+    "company": "HueHouse",
+    "red": 20,
+    "yellow": 90,
+    "white": 17,
+    "blue": 44
+  },
+  {
+    "date": "2025-04-06",
+    "company": "PrimePaints",
+    "red": 44,
+    "yellow": 42,
+    "white": 14,
+    "blue": 50
+  },
+  {
+    "date": "2025-04-06",
+    "company": "ShadeSolutions",
+    "red": 37,
+    "yellow": 16,
+    "white": 82,
+    "blue": 81
+  },
+  {
+    "date": "2025-04-07",
+    "company": "PaintPros",
+    "red": 21,
+    "yellow": 43,
+    "white": 42,
+    "blue": 57
+  },
+  {
+    "date": "2025-04-07",
+    "company": "ColorMasters",
+    "red": 32,
+    "yellow": 71,
+    "white": 97,
+    "blue": 46
+  },
+  {
+    "date": "2025-04-07",
+    "company": "HueHouse",
+    "red": 53,
+    "yellow": 95,
+    "white": 44,
+    "blue": 74
+  },
+  {
+    "date": "2025-04-07",
+    "company": "PrimePaints",
+    "red": 56,
+    "yellow": 87,
+    "white": 12,
+    "blue": 10
+  },
+  {
+    "date": "2025-04-07",
+    "company": "ShadeSolutions",
+    "red": 14,
+    "yellow": 99,
+    "white": 23,
+    "blue": 36
+  }
+]
