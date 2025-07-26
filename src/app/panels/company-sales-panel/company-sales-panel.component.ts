@@ -1,153 +1,136 @@
-import { Component, OnInit, AfterViewInit, ElementRef } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { DataService, SalesRecord } from '../../services/data.services';
-import { map } from 'rxjs/operators';
-import { EventBusService } from '../../services/event-bus-service';
-import * as Plotly from 'plotly.js-dist-min';
+import { map, filter } from 'rxjs/operators';
+import {
+  EventBusService,
+  DockviewEvent,
+} from '../../services/event-bus-service';
 
 @Component({
   selector: 'app-company-sales-panel',
   templateUrl: './company-sales-panel.component.html',
   styleUrls: ['./company-sales-panel.component.css'],
 })
-export class CompanySalesPanelComponent implements OnInit, AfterViewInit {
+export class CompanySalesPanelComponent implements OnInit {
   plotData: any[] = [];
   plotLayout: any = {};
-  salesRecords: SalesRecord[] = []; // explicitly store data locally
-
-  private resizeObserver!: ResizeObserver;
+  salesRecords: SalesRecord[] = [];
 
   constructor(
     private dataService: DataService,
-    private eventBus: EventBusService,
-    private el: ElementRef
+    private eventBus: EventBusService
   ) {}
 
   ngOnInit(): void {
-    // Load data only once explicitly
     this.dataService.getSalesData().subscribe((records) => {
-      this.salesRecords = records; // store clearly in local variable
-
-      const aggregated = records.reduce(
-        (acc: { [key: string]: number }, curr: SalesRecord) => {
-          const total = curr.red + curr.yellow + curr.white + curr.blue;
-          acc[curr.company] = (acc[curr.company] || 0) + total;
-          return acc;
-        },
-        {}
-      );
-
-      this.plotData = [
-        {
-          x: Object.keys(aggregated),
-          y: Object.values(aggregated),
-          type: 'bar',
-          marker: { color: '#f58518' },
-          hoverinfo: 'x+y',
-          hovertemplate: 'Company: %{x}<br>Sales: %{y}<extra></extra>',
-        },
-      ];
-
-      this.plotLayout = {
-        title: 'Sales by Company',
-        xaxis: { title: 'Company' },
-        yaxis: { title: 'Number of Sales' },
-        margin: { t: 40, l: 50, r: 30, b: 60 },
-      };
-
-      Plotly.newPlot(
-        this.el.nativeElement.firstChild,
-        this.plotData,
-        this.plotLayout,
-        { responsive: true }
-      );
+      this.salesRecords = records;
+      this.renderFullChart();
     });
 
-    // Listen explicitly for hover events
-    this.eventBus.on().subscribe((event) => {
-      console.log('[CompanySales]', event);
-      if (event.type === 'message') {
-        const hoveredDate = event.message;
-        console.log(hoveredDate);
-        if (hoveredDate) {
-          this.highlightSalesByDate(hoveredDate);
-        } else {
-          this.clearHighlight();
-        }
-      }
-    });
-  }
-
-  highlightSalesByDate(date: string): void {
-    // Explicitly use locally stored data (no new subscription)
-    const aggregated = this.salesRecords
-      .filter((record) => record.date === date)
-      .reduce((acc, curr) => {
-        const total = curr.red + curr.yellow + curr.white + curr.blue;
-        acc[curr.company] = (acc[curr.company] || 0) + total;
-        return acc;
-      }, {} as { [key: string]: number });
-
-    const highlightedCompanies = Object.keys(aggregated);
-
-    const plotElement = document.querySelector(
-      'app-company-sales-panel app-plotly-chart .plotly-chart'
-    ) as HTMLElement;
-
-    if (plotElement) {
-      Plotly.restyle(plotElement, {
-        marker: {
-          color: this.plotData[0].x.map((company: string) =>
-            highlightedCompanies.includes(company) ? '#f58518' : '#d9d9d9'
-          ),
-        },
+    // --- PATCH START: EventBus subscriptions ---
+    this.eventBus
+      .on()
+      .pipe(
+        filter((e) => e.type === 'highlight' && e.panelId !== 'company-sales')
+      )
+      .subscribe((event) => {
+        this.applyHighlight(event);
       });
-      console.log('Highlighed', highlightedCompanies);
+
+    this.eventBus
+      .on()
+      .pipe(filter((e) => e.type === 'clearHighlight'))
+      .subscribe(() => {
+        this.clearHighlight();
+      });
+
+    this.eventBus
+      .on()
+      .pipe(filter((e) => e.type === 'selected' && !!e.message))
+      .subscribe((event) => {
+        this.filterByDateMessage(event.message!);
+      });
+    // --- PATCH END ---
+  }
+
+  renderFullChart(): void {
+    this.plotData = [
+      {
+        x: this.salesRecords.map((r) => r.company),
+        y: this.salesRecords.map((r) => r.red + r.yellow + r.white + r.blue),
+        type: 'bar',
+        marker: { color: 'steelblue' },
+      },
+    ];
+    this.plotLayout = { title: 'Sales by Company' };
+  }
+
+  // --- PATCH START: Flexible message-based filtering ---
+  filterByDateMessage(message: string): void {
+    let selectedDates: string[];
+
+    try {
+      const parsed = JSON.parse(message);
+      selectedDates = Array.isArray(parsed) ? parsed : [parsed];
+    } catch {
+      selectedDates = [message];
     }
+
+    const filtered = this.salesRecords.filter((r) =>
+      selectedDates.includes(r.date)
+    );
+
+    this.plotData = [
+      {
+        x: filtered.map((r) => r.company),
+        y: filtered.map((r) => r.red + r.yellow + r.white + r.blue),
+        type: 'bar',
+        marker: { color: 'seagreen' },
+      },
+    ];
+    this.plotLayout = {
+      title: `Sales by Company on ${selectedDates.join(', ')}`,
+    };
   }
+  // --- PATCH END ---
 
-  clearHighlight(): void {
-    console.log('Clearing highlights');
-    const plotElement = document.querySelector(
-      'app-company-sales-panel app-plotly-chart .plotly-chart'
-    ) as HTMLElement;
-
-    if (plotElement) {
-      Plotly.restyle(plotElement, { marker: { color: '#f58518' } });
-    }
-  }
-  ngAfterViewInit(): void {
-    this.resizeObserver = new ResizeObserver(() => {
-      Plotly.Plots.resize(this.el.nativeElement.firstChild);
-    });
-
-    this.resizeObserver.observe(this.el.nativeElement);
-  }
-
-  onHovered(date: string): void {
-    this.eventBus.emit({ type: 'message', panelId: 'all', message: date });
-  }
-
-  onClicked(date: string): void {
-    this.eventBus.emit({ type: 'message', panelId: 'filter', message: date });
-  }
-
-  onSelected(dates: string[]): void {
-    this.eventBus.emit({
-      type: 'message',
-      panelId: 'multi-filter',
-      message: JSON.stringify(dates),
-    });
-  }
-
-  onZoomed(range: [string, string]): void {
-    this.eventBus.emit({
-      type: 'message',
-      panelId: 'zoom',
-      message: JSON.stringify(range),
-    });
+  onZoomed(event: any): void {
+    console.log('Zoom event:', event);
   }
 
   onCleared(): void {
-    this.eventBus.emit({ type: 'message', panelId: 'filter', message: '' });
+    console.log('Clear interaction received');
+    this.eventBus.emit({ type: 'clearHighlight' });
+  }
+
+  onBarClicked(point: any): void {
+    const label = point.label || point.x;
+    this.eventBus.emit({
+      type: 'highlight',
+      panelId: 'company-sales',
+      message: label,
+    });
+  }
+
+  onHovered(event: any): void {
+    console.log('Hovered event:', event);
+  }
+
+  onClicked(event: any): void {
+    console.log('Clicked event:', event);
+  }
+
+  onSelected(event: any): void {
+    console.log('Selected event:', event);
+  }
+
+  applyHighlight(event: DockviewEvent): void {
+    console.log('Highlight received in company panel:', event);
+    // TODO: Apply highlight logic to Plotly chart
+  }
+
+  clearHighlight(): void {
+    console.log('Clear highlight received in company panel');
+    // TODO: Clear highlight logic from Plotly chart
   }
 }

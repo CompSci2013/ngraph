@@ -1,0 +1,12 @@
+/* --- PATCH START: Ensure full height layout for Plotly rendering --- */
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+app-histogram {
+  flex: 1;
+  min-height: 0; /* prevent overflow */
+}
+/* --- PATCH END --- */

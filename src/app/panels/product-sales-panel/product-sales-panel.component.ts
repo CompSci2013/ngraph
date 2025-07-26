@@ -1,19 +1,24 @@
-import { Component, OnInit, AfterViewInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { DataService, SalesRecord } from '../../services/data.services';
 import { EventBusService } from '../../services/event-bus-service';
-import { HistogramComponent } from '../../components/histogram.component';
+import * as Plotly from 'plotly.js-dist-min';
+// --- PATCH START: Import HistogramComponent ---
+import { HistogramComponent } from '../../shared/plots/histogram.component';
+// --- PATCH END ---
 
 @Component({
   selector: 'app-product-sales-panel',
   templateUrl: './product-sales-panel.component.html',
   styleUrls: ['./product-sales-panel.component.css'],
 })
-export class ProductSalesPanelComponent implements OnInit, AfterViewInit {
+export class ProductSalesPanelComponent implements OnInit {
   plotData: any[] = [];
   plotLayout: any = {};
   salesRecords: SalesRecord[] = [];
 
-  @ViewChild(HistogramComponent) histogram!: HistogramComponent;
+  // --- PATCH START: Access HistogramComponent directly ---
+  @ViewChild(HistogramComponent) histogram?: HistogramComponent;
+  // --- PATCH END ---
 
   constructor(
     private dataService: DataService,
@@ -42,13 +47,29 @@ export class ProductSalesPanelComponent implements OnInit, AfterViewInit {
           hovertemplate: 'Product: %{x}<br>Sales: %{y}<extra></extra>',
         },
       ];
+      console.log('[DEBUG] plotData:', this.plotData);
 
+      // --- PATCH START: Explicit axis typing for Plotly ---
       this.plotLayout = {
         title: 'Sales by Product',
-        xaxis: { title: 'Product' },
-        yaxis: { title: 'Number of Sales' },
+        xaxis: {
+          title: 'Product',
+          type: 'category',
+        },
+        yaxis: {
+          title: 'Number of Sales',
+          rangemode: 'tozero',
+        },
         margin: { t: 40, l: 50, r: 30, b: 60 },
       };
+      // --- PATCH END ---
+
+      // --- PATCH START: Diagnostic delayed re-render ---
+      setTimeout(() => {
+        console.log('[DEBUG] Forcing renderPlot() from parent');
+        (this.histogram as any)?.renderPlot?.();
+      }, 2000);
+      // --- PATCH END ---
     });
 
     this.eventBus.on().subscribe((event) => {
@@ -60,15 +81,6 @@ export class ProductSalesPanelComponent implements OnInit, AfterViewInit {
           this.clearHighlight();
         }
       }
-    });
-  }
-
-  ngAfterViewInit(): void {
-    // Trigger the plot update explicitly after ViewChild is available
-    this.dataService.getSalesData().subscribe(() => {
-      this.histogram.plotData = this.plotData;
-      this.histogram.plotLayout = this.plotLayout;
-      this.histogram.refreshPlot(); // <-- Changed to public method
     });
   }
 
@@ -104,35 +116,10 @@ export class ProductSalesPanelComponent implements OnInit, AfterViewInit {
     });
   }
 
-  onHovered(product: string): void {
-    this.eventBus.emit({ type: 'message', panelId: 'all', message: product });
-  }
-
-  onClicked(product: string): void {
-    this.eventBus.emit({
-      type: 'message',
-      panelId: 'filter',
-      message: product,
-    });
-  }
-
-  onSelected(products: string[]): void {
-    this.eventBus.emit({
-      type: 'message',
-      panelId: 'multi-filter',
-      message: JSON.stringify(products),
-    });
-  }
-
-  onZoomed(range: [string, string]): void {
-    this.eventBus.emit({
-      type: 'message',
-      panelId: 'zoom',
-      message: JSON.stringify(range),
-    });
-  }
-
-  onCleared(): void {
-    this.eventBus.emit({ type: 'message', panelId: 'filter', message: '' });
-  }
+  // These handlers are retained for template compatibility or future use
+  onHovered(product: string): void {}
+  onClicked(product: string): void {}
+  onSelected(products: string[]): void {}
+  onZoomed(range: [string, string]): void {}
+  onCleared(): void {}
 }

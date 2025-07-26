@@ -1,23 +1,19 @@
-import { Component, OnInit, AfterViewInit, ElementRef } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { DataService, SalesRecord } from '../../services/data.services';
 import { EventBusService } from '../../services/event-bus-service';
-import * as Plotly from 'plotly.js-dist-min';
 
 @Component({
   selector: 'app-date-sales-panel',
   templateUrl: './date-sales-panel.component.html',
   styleUrls: ['./date-sales-panel.component.css'],
 })
-export class DateSalesPanelComponent implements OnInit, AfterViewInit {
+export class DateSalesPanelComponent implements OnInit {
   plotData: any[] = [];
   plotLayout: any = {};
 
-  private resizeObserver!: ResizeObserver;
-
   constructor(
     private dataService: DataService,
-    private eventBus: EventBusService,
-    private el: ElementRef
+    private eventBus: EventBusService
   ) {}
 
   ngOnInit(): void {
@@ -49,38 +45,33 @@ export class DateSalesPanelComponent implements OnInit, AfterViewInit {
         yaxis: { title: 'Number of Sales' },
         margin: { t: 40, l: 50, r: 30, b: 60 },
       };
-
-      Plotly.newPlot(
-        this.el.nativeElement.firstChild,
-        this.plotData,
-        this.plotLayout,
-        { responsive: true }
-      );
     });
   }
 
-  ngAfterViewInit(): void {
-    this.resizeObserver = new ResizeObserver(() => {
-      Plotly.Plots.resize(this.el.nativeElement.firstChild);
-    });
-
-    this.resizeObserver.observe(this.el.nativeElement);
-  }
-
-  onHovered(date: string): void {
-    this.eventBus.emit({ type: 'message', panelId: 'all', message: date });
-  }
-
+  // --- PATCH START: Emit 'selected' for single click ---
   onClicked(date: string): void {
-    this.eventBus.emit({ type: 'message', panelId: 'filter', message: date });
-  }
-
-  onSelected(dates: string[]): void {
+    console.log('[Date Panel] emitting selected:', date);
     this.eventBus.emit({
-      type: 'message',
-      panelId: 'multi-filter',
+      type: 'selected',
+      panelId: 'date-sales',
+      message: date,
+    });
+  }
+  // --- PATCH END ---
+
+  // --- PATCH START: Emit 'selected' for multi-selection (box drag) ---
+  onSelected(dates: string[]): void {
+    console.log('[Date Panel] emitting selected:', dates);
+    this.eventBus.emit({
+      type: 'selected',
+      panelId: 'date-sales',
       message: JSON.stringify(dates),
     });
+  }
+  // --- PATCH END ---
+
+  onCleared(): void {
+    this.eventBus.emit({ type: 'message', panelId: 'filter', message: '' });
   }
 
   onZoomed(range: [string, string]): void {
@@ -89,9 +80,5 @@ export class DateSalesPanelComponent implements OnInit, AfterViewInit {
       panelId: 'zoom',
       message: JSON.stringify(range),
     });
-  }
-
-  onCleared(): void {
-    this.eventBus.emit({ type: 'message', panelId: 'filter', message: '' });
   }
 }

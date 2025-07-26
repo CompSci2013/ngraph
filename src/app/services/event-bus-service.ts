@@ -5,6 +5,7 @@ import { Injectable } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 
+// --- PATCH START: added 'selected' to DockviewEventType ---
 export type DockviewEventType =
   | 'panelClosed'
   | 'panelFocused'
@@ -14,7 +15,9 @@ export type DockviewEventType =
   | 'message'
   | 'log'
   | 'highlight'
-  | 'clearHighlight';
+  | 'clearHighlight'
+  | 'selected';
+// --- PATCH END ---
 
 export interface DockviewEvent {
   type: DockviewEventType;
