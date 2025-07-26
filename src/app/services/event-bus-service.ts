@@ -1,28 +1,30 @@
-// File: event-bus.service.ts
-
 /* ------------------------------------------
- * Simple event hub for cross-service/component comms (could be improved with event type union/interface).
+ * Simple event hub for cross-service/component communication.
  * ------------------------------------------ */
 import { Injectable } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 
-export interface LogEvent {
-  type: 'log';
-  message: string;
-  timestamp?: string;
-  source?: string; // Panel ID or other source
-}
+export type DockviewEventType =
+  | 'panelClosed'
+  | 'panelFocused'
+  | 'panelAdded'
+  | 'headerActionClicked'
+  | 'floatingStateChanged'
+  | 'message'
+  | 'log'
+  | 'highlight'
+  | 'clearHighlight';
 
-// Define event types
-export type DockviewEvent =
-  | { type: 'panelClosed'; panelId: string }
-  | { type: 'panelFocused'; panelId: string }
-  | { type: 'panelAdded'; panelId: string }
-  | { type: 'headerActionClicked'; panelId: string; actionId: string }
-  | { type: 'floatingStateChanged'; panelId: string; floating: boolean }
-  | { type: 'message'; toPanelId: string; message: string }
-  | { type: 'log'; message: string; timestamp?: string; source?: string };
+export interface DockviewEvent {
+  type: DockviewEventType;
+  panelId?: string;
+  actionId?: string;
+  floating?: boolean;
+  message?: string;
+  timestamp?: string;
+  source?: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class EventBusService {
@@ -94,6 +96,28 @@ export class EventBusService {
         } => event.type === 'floatingStateChanged'
       ),
       map((event) => ({ panelId: event.panelId, floating: event.floating }))
+    );
+  }
+
+  onHighlight(panelId: string): Observable<string[]> {
+    return this.event$.pipe(
+      filter(
+        (
+          event
+        ): event is { type: 'highlight'; panelId: string; message: string } =>
+          event.type === 'highlight' && event.panelId === panelId
+      ),
+      map((event) => JSON.parse(event.message || '[]'))
+    );
+  }
+
+  onClearHighlight(panelId: string): Observable<void> {
+    return this.event$.pipe(
+      filter(
+        (event): event is { type: 'clearHighlight'; panelId: string } =>
+          event.type === 'clearHighlight' && event.panelId === panelId
+      ),
+      map(() => {})
     );
   }
 }

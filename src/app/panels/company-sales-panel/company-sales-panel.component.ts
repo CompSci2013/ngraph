@@ -124,17 +124,17 @@ export class CompanySalesPanelComponent implements OnInit, AfterViewInit {
   }
 
   onHovered(date: string): void {
-    this.eventBus.emit({ type: 'message', toPanelId: 'all', message: date });
+    this.eventBus.emit({ type: 'message', panelId: 'all', message: date });
   }
 
   onClicked(date: string): void {
-    this.eventBus.emit({ type: 'message', toPanelId: 'filter', message: date });
+    this.eventBus.emit({ type: 'message', panelId: 'filter', message: date });
   }
 
   onSelected(dates: string[]): void {
     this.eventBus.emit({
       type: 'message',
-      toPanelId: 'multi-filter',
+      panelId: 'multi-filter',
       message: JSON.stringify(dates),
     });
   }
@@ -142,12 +142,12 @@ export class CompanySalesPanelComponent implements OnInit, AfterViewInit {
   onZoomed(range: [string, string]): void {
     this.eventBus.emit({
       type: 'message',
-      toPanelId: 'zoom',
+      panelId: 'zoom',
       message: JSON.stringify(range),
     });
   }
 
   onCleared(): void {
-    this.eventBus.emit({ type: 'message', toPanelId: 'filter', message: '' });
+    this.eventBus.emit({ type: 'message', panelId: 'filter', message: '' });
   }
 }

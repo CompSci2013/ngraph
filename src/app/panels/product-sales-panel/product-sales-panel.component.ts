@@ -1,7 +1,7 @@
-import { Component, OnInit, AfterViewInit, ElementRef } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild } from '@angular/core';
 import { DataService, SalesRecord } from '../../services/data.services';
 import { EventBusService } from '../../services/event-bus-service';
-import * as Plotly from 'plotly.js-dist-min';
+import { HistogramComponent } from '../../components/histogram.component';
 
 @Component({
   selector: 'app-product-sales-panel',
@@ -11,18 +11,16 @@ import * as Plotly from 'plotly.js-dist-min';
 export class ProductSalesPanelComponent implements OnInit, AfterViewInit {
   plotData: any[] = [];
   plotLayout: any = {};
-  salesRecords: SalesRecord[] = []; // explicitly store data locally
+  salesRecords: SalesRecord[] = [];
 
-  private resizeObserver!: ResizeObserver;
+  @ViewChild(HistogramComponent) histogram!: HistogramComponent;
 
   constructor(
     private dataService: DataService,
-    private eventBus: EventBusService,
-    private el: ElementRef
+    private eventBus: EventBusService
   ) {}
 
   ngOnInit(): void {
-    // Load data explicitly once and store locally
     this.dataService.getSalesData().subscribe((records) => {
       this.salesRecords = records;
 
@@ -51,16 +49,8 @@ export class ProductSalesPanelComponent implements OnInit, AfterViewInit {
         yaxis: { title: 'Number of Sales' },
         margin: { t: 40, l: 50, r: 30, b: 60 },
       };
-
-      Plotly.newPlot(
-        this.el.nativeElement.firstChild,
-        this.plotData,
-        this.plotLayout,
-        { responsive: true }
-      );
     });
 
-    // Explicitly subscribe to hover events
     this.eventBus.on().subscribe((event) => {
       if (event.type === 'message') {
         const hoveredDate = event.message;
@@ -73,16 +63,16 @@ export class ProductSalesPanelComponent implements OnInit, AfterViewInit {
     });
   }
 
-  ngAfterViewInit() {
-    this.resizeObserver = new ResizeObserver(() => {
-      Plotly.Plots.resize(this.el.nativeElement.firstChild);
+  ngAfterViewInit(): void {
+    // Trigger the plot update explicitly after ViewChild is available
+    this.dataService.getSalesData().subscribe(() => {
+      this.histogram.plotData = this.plotData;
+      this.histogram.plotLayout = this.plotLayout;
+      this.histogram.refreshPlot(); // <-- Changed to public method
     });
-
-    this.resizeObserver.observe(this.el.nativeElement);
   }
 
   highlightSalesByDate(date: string): void {
-    // Explicitly use locally stored data for highlighting
     const salesOnDate = this.salesRecords.filter(
       (record) => record.date === date
     );
@@ -99,54 +89,50 @@ export class ProductSalesPanelComponent implements OnInit, AfterViewInit {
       (product) => aggregated[product as keyof typeof aggregated] > 0
     );
 
-    const plotElement = document.querySelector(
-      'app-product-sales-panel app-plotly-chart .plotly-chart'
-    ) as HTMLElement;
-
-    if (plotElement) {
-      Plotly.restyle(plotElement, {
-        marker: {
-          color: this.plotData[0].x.map((product: string) =>
-            productsSold.includes(product) ? '#54a24b' : '#d9d9d9'
-          ),
-        },
-      });
-    }
+    this.eventBus.emit({
+      type: 'highlight',
+      panelId: 'product-sales-panel',
+      message: JSON.stringify(productsSold),
+    });
   }
 
   clearHighlight(): void {
-    const plotElement = document.querySelector(
-      'app-product-sales-panel app-plotly-chart .plotly-chart'
-    ) as HTMLElement;
-
-    if (plotElement) {
-      Plotly.restyle(plotElement, { marker: { color: '#54a24b' } });
-    }
-  }
-  onHovered(date: string): void {
-    this.eventBus.emit({ type: 'message', toPanelId: 'all', message: date });
-  }
-
-  onClicked(date: string): void {
-    this.eventBus.emit({ type: 'message', toPanelId: 'filter', message: date });
-  }
-
-  onSelected(dates: string[]): void {
     this.eventBus.emit({
-      type: 'message',
-      toPanelId: 'multi-filter',
-      message: JSON.stringify(dates),
+      type: 'clearHighlight',
+      panelId: 'product-sales-panel',
+      message: '',
     });
   }
+
+  onHovered(product: string): void {
+    this.eventBus.emit({ type: 'message', panelId: 'all', message: product });
+  }
+
+  onClicked(product: string): void {
+    this.eventBus.emit({
+      type: 'message',
+      panelId: 'filter',
+      message: product,
+    });
+  }
+
+  onSelected(products: string[]): void {
+    this.eventBus.emit({
+      type: 'message',
+      panelId: 'multi-filter',
+      message: JSON.stringify(products),
+    });
+  }
+
   onZoomed(range: [string, string]): void {
     this.eventBus.emit({
       type: 'message',
-      toPanelId: 'zoom',
+      panelId: 'zoom',
       message: JSON.stringify(range),
     });
   }
 
   onCleared(): void {
-    this.eventBus.emit({ type: 'message', toPanelId: 'filter', message: '' });
+    this.eventBus.emit({ type: 'message', panelId: 'filter', message: '' });
   }
 }

@@ -44,6 +44,10 @@ export class HistogramComponent
     }
   }
 
+  refreshPlot(): void {
+    this.initializePlot(); // Explicit plot refresh method
+  }
+
   protected highlightItems(item: string): void {
     // Histogram-specific highlight logic here
   }
@@ -53,6 +57,6 @@ export class HistogramComponent
   }
 
   onClicked(date: string): void {
-    this.eventBus.emit({ type: 'message', toPanelId: 'filter', message: date });
+    this.eventBus.emit({ type: 'message', panelId: 'filter', message: date });
   }
 }
