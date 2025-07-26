@@ -9,7 +9,7 @@ import { DateSalesPanelComponent } from './panels/date-sales-panel/date-sales-pa
 import { CompanySalesPanelComponent } from './panels/company-sales-panel/company-sales-panel.component';
 import { ProductSalesPanelComponent } from './panels/product-sales-panel/product-sales-panel.component';
 import { PlotlyChartComponent } from './shared/plotly-chart/plotly-chart.component';
-import { HistogramComponent } from './components/histogram.component';
+import { HistogramComponent } from './shared/plots/histogram.component';
 import { DockviewContainerComponent } from './components/dockview-container/dockview-container.component';
 
 @NgModule({

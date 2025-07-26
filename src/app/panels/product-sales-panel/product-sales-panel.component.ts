@@ -1,10 +1,7 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { DataService, SalesRecord } from '../../services/data.services';
 import { EventBusService } from '../../services/event-bus-service';
 import * as Plotly from 'plotly.js-dist-min';
-// --- PATCH START: Import HistogramComponent ---
-import { HistogramComponent } from '../../shared/plots/histogram.component';
-// --- PATCH END ---
 
 @Component({
   selector: 'app-product-sales-panel',
@@ -15,10 +12,6 @@ export class ProductSalesPanelComponent implements OnInit {
   plotData: any[] = [];
   plotLayout: any = {};
   salesRecords: SalesRecord[] = [];
-
-  // --- PATCH START: Access HistogramComponent directly ---
-  @ViewChild(HistogramComponent) histogram?: HistogramComponent;
-  // --- PATCH END ---
 
   constructor(
     private dataService: DataService,
@@ -62,13 +55,6 @@ export class ProductSalesPanelComponent implements OnInit {
         },
         margin: { t: 40, l: 50, r: 30, b: 60 },
       };
-      // --- PATCH END ---
-
-      // --- PATCH START: Diagnostic delayed re-render ---
-      setTimeout(() => {
-        console.log('[DEBUG] Forcing renderPlot() from parent');
-        (this.histogram as any)?.renderPlot?.();
-      }, 2000);
       // --- PATCH END ---
     });
 

@@ -28,66 +28,91 @@ export class HistogramComponent implements OnChanges, OnDestroy, AfterViewInit {
   private initialized = false;
   private resizeObserver!: ResizeObserver;
 
-  // --- PATCH START: track latest inputs ---
   private latestData: any[] = [];
   private latestLayout: any = {};
-  // --- PATCH END ---
+  private readyToRender = false;
+  private visibleCheckFrame: number | null = null;
 
   constructor(private elRef: ElementRef) {}
 
   ngAfterViewInit(): void {
     this.initialized = true;
 
-    // --- PATCH START: Wait for container to be visible and sized ---
-    const waitForVisibleSize = () => {
-      const el = this.getPlotElement();
-      if (el?.offsetWidth > 0 && el?.offsetHeight > 0) {
-        this.renderPlot();
-        this.setupEventListeners();
-      } else {
-        requestAnimationFrame(waitForVisibleSize);
-      }
-    };
-    requestAnimationFrame(waitForVisibleSize);
-    // --- PATCH END ---
+    console.log('[Histogram] ngAfterViewInit called');
 
     this.resizeObserver = new ResizeObserver(() => {
+      console.log('[Histogram] ResizeObserver triggered');
       Plotly.Plots.resize(this.getPlotElement());
     });
     this.resizeObserver.observe(this.getPlotElement());
+
+    this.waitUntilVisibleAndReady();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    // --- PATCH START: store inputs and allow future re-render ---
     if (changes['plotData']) {
       this.latestData = this.plotData;
+      console.log('[Histogram] plotData updated:', this.latestData);
     }
     if (changes['plotLayout']) {
       this.latestLayout = this.plotLayout;
+      console.log('[Histogram] plotLayout updated:', this.latestLayout);
     }
 
-    if (this.initialized && (changes['plotData'] || changes['plotLayout'])) {
+    if (this.initialized && this.readyToRender) {
+      console.log('[Histogram] ngOnChanges triggering renderPlot()');
       this.renderPlot();
     }
-    // --- PATCH END ---
   }
 
   ngOnDestroy(): void {
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
     }
+    if (this.visibleCheckFrame) {
+      cancelAnimationFrame(this.visibleCheckFrame);
+    }
     Plotly.purge(this.getPlotElement());
   }
 
-  // --- PATCH START: use stored inputs with fallback ---
+  private waitUntilVisibleAndReady(): void {
+    const el = this.getPlotElement();
+    if (!el) {
+      console.warn('[Histogram] No plot element found');
+      return;
+    }
+
+    const hasSize = el.offsetWidth > 0 && el.offsetHeight > 0;
+    const hasData = this.latestData?.length > 0;
+    const hasLayout =
+      this.latestLayout && Object.keys(this.latestLayout).length > 0;
+
+    console.log(
+      `[Histogram] check size: ${el.offsetWidth}x${el.offsetHeight}, data: ${hasData}, layout: ${hasLayout}`
+    );
+
+    if (hasSize && hasData && hasLayout) {
+      console.log('[Histogram] Conditions met, rendering now');
+      this.readyToRender = true;
+      this.renderPlot();
+      this.setupEventListeners();
+    } else {
+      this.visibleCheckFrame = requestAnimationFrame(() =>
+        this.waitUntilVisibleAndReady()
+      );
+    }
+  }
+
   private renderPlot(): void {
-    const data = this.latestData ?? [];
-    const layout = this.latestLayout ?? {};
-    Plotly.newPlot(this.getPlotElement(), data, layout, {
+    console.log(
+      '[Histogram] Calling Plotly.newPlot() with:',
+      this.latestData,
+      this.latestLayout
+    );
+    Plotly.newPlot(this.getPlotElement(), this.latestData, this.latestLayout, {
       responsive: true,
     });
   }
-  // --- PATCH END ---
 
   private getPlotElement(): HTMLElement {
     return this.elRef.nativeElement.querySelector('.plot');
