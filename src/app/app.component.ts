@@ -60,14 +60,14 @@ export class AppComponent implements AfterViewInit {
       id: 'company-sales-panel',
       title: 'Sales by Company',
       component: 'companySalesPanel',
-      position: { direction: 'right' },
+      position: { direction: 'left' },
     });
 
     this.dockviewContainer.addPanel({
       id: 'product-sales-panel',
       title: 'Sales by Product',
       component: 'productSalesPanel',
-      position: { direction: 'below' },
+      position: { direction: 'left' },
     });
   }
 }

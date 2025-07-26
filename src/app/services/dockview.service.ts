@@ -32,6 +32,7 @@ import {
 } from 'dockview-core';
 import { EventBusService } from './event-bus-service';
 import { group } from 'console';
+import { title } from 'process';
 
 @Injectable({ providedIn: 'root' })
 export class DockviewService {
@@ -148,6 +149,11 @@ export class DockviewService {
         const element = document.createElement('div');
         element.classList.add('custom-tab');
 
+        element.style.display = 'inline-flex';
+        element.style.alignItems = 'center';
+        element.style.fontSize = 'initial';
+        element.style.marginTop = '5px';
+
         let actionsContainer: HTMLElement;
         let titleSpan: HTMLElement;
 
@@ -158,10 +164,18 @@ export class DockviewService {
             titleSpan = document.createElement('span');
             titleSpan.textContent = parameters.title || options.id;
             titleSpan.classList.add('custom-tab-title');
+
+            titleSpan.style.display = 'flex';
+            titleSpan.style.marginRight = '10px';
+            titleSpan.style.alignItems = 'end';
+
             element.appendChild(titleSpan);
 
             actionsContainer = document.createElement('div');
             actionsContainer.classList.add('custom-tab-actions');
+            actionsContainer.style.display = 'flex';
+            actionsContainer.style.alignItems = 'center';
+
             element.appendChild(actionsContainer);
 
             const renderActions = (actions: Array<any>) => {
