@@ -26,13 +26,7 @@ export class DockviewDefaultTabRenderer {}
 })
 export class DockviewContainerComponent implements AfterViewInit, OnDestroy {
   @ViewChild('host', { static: true }) hostElementRef!: ElementRef<HTMLElement>;
-
   @Input() theme: DockviewTheme = themeVisualStudio; // set as default
-
-  // PATCH START: Add containerId input property
-  @Input() containerId: string = '';
-  // PATCH END
-
   @Output() initialized = new EventEmitter<DockviewApi>();
 
   constructor(private dockviewService: DockviewService) {}
@@ -40,18 +34,17 @@ export class DockviewContainerComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     const api = this.dockviewService.initialize(
       this.hostElementRef.nativeElement,
-      this.theme,
-      this.containerId
+      this.theme
     );
     this.initialized.emit(api);
   }
 
   ngOnDestroy(): void {
-    this.dockviewService.dispose(this.containerId);
+    this.dockviewService.dispose();
   }
 
   public addPanel(config: any): void {
-    this.dockviewService.addPanel(config, this.containerId);
+    this.dockviewService.addPanel(config);
   }
 
   public focusPanel(id: string): void {
