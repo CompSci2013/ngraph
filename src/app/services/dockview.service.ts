@@ -22,27 +22,22 @@ import {
   themeLightSpaced,
   themeReplit,
 } from 'dockview-core';
-import { IContentRenderer } from 'dockview-core/dist/cjs/dockview/types';
 import { PanelStateService, PanelState } from './panel-state.service';
-import { HeaderActionsService, HeaderAction } from './header-actions.service';
+import { HeaderActionsService } from './header-actions.service';
 import { RendererRegistryService } from './render-registry.service';
 import { Injector } from '@angular/core';
 import {
   CreateComponentOptions,
   ITabRenderer,
   TabPartInitParameters,
-  DockviewPanelApi,
   DockviewApi,
   GroupPanelPartInitParameters,
   IDockviewPanel,
 } from 'dockview-core';
 import { EventBusService } from './event-bus-service';
-import { group } from 'console';
-import { title } from 'process';
 
 @Injectable({ providedIn: 'root' })
 export class DockviewService {
-  // private dockviewComponent!: DockviewComponent;
   private dockviewApi!: DockviewApi;
   private dockviewComponents: Map<string, DockviewComponent> = new Map();
   private dockviewApis: Map<string, DockviewApi> = new Map();
@@ -67,17 +62,10 @@ export class DockviewService {
       theme: theme,
 
       createComponent: (options: CreateComponentOptions) => {
-        console.log(
-          '[DockviewService] createComponent called for:',
-          options.name
-        );
-
         const componentType = this.rendererRegistry.getPanelRenderer(
           options.name
         );
-        let compnentRef: ComponentRef<any> | null = null;
         if (!componentType) {
-          console.error(`No renderer found for ${options.name}`);
           return {
             element: document.createElement('div'),
             init: () => {},
@@ -87,7 +75,6 @@ export class DockviewService {
 
         const componentFactory =
           this.componentFactoryResolver.resolveComponentFactory(componentType);
-
         const componentRef = componentFactory.create(this.injector);
         this.injector.get(ApplicationRef).attachView(componentRef.hostView);
 
@@ -96,60 +83,18 @@ export class DockviewService {
 
         return {
           element: panelElement,
-
           init: (params: GroupPanelPartInitParameters) => {
             const panelId = params.api.id;
-            console.log(
-              `[DockviewService] init called for panelId: ${panelId}`
+            const headerActions = this.headerActionsService.getActions(
+              options.name
             );
-
-            const headerActions = [
-              {
-                id: 'popout',
-                label: 'Popout',
-                icon: 'codicon codicon-browser',
-                tooltip: 'Open in Floating Window',
-                command: (panelApi: IDockviewPanel) => {
-                  console.log(
-                    `[DockviewService] Popout clicked for panelId: ${panelId}`
-                  );
-                  const dockviewApi = this.dockviewApi;
-                  const newGroup = dockviewApi.addGroup({
-                    referencePanel: panelApi.id,
-                    direction: 'right',
-                  });
-                  (panelApi as any).moveTo({ group: newGroup });
-                  dockviewApi.addPopoutGroup(newGroup, {
-                    position: { width: 800, height: 600, left: 100, top: 100 },
-                    popoutUrl: '/assets/popout.html',
-                  });
-                },
-              },
-              {
-                id: 'close',
-                label: 'Close',
-                icon: 'codicon codicon-close',
-                tooltip: 'Close Panel',
-                command: (panelApi: IDockviewPanel) => {
-                  const panel = this.dockviewApi.getPanel(panelApi.id);
-                  if (panel) {
-                    this.dockviewApi.removePanel(panel);
-                  }
-                },
-              },
-            ];
-
             params.api.updateParameters({ headerActions });
             this.panelStateService.setPanelActions(panelId, headerActions);
-
             if (params.params) {
               Object.assign(componentRef.instance, params.params);
             }
           },
-
-          dispose: () => {
-            componentRef.destroy();
-          },
+          dispose: () => componentRef.destroy(),
         };
       },
 
@@ -216,11 +161,45 @@ export class DockviewService {
       },
     });
 
-    this.dockviewComponents.set(containerId, dockviewComponent);
-    this.dockviewApis.set(containerId, dockviewComponent.api);
+    const api = dockviewComponent.api;
+    api.onUnhandledDragOverEvent((event: any) => {
+      console.log('[Dockview] Drag over event:', event);
+      event.nativeEvent.preventDefault();
+    });
 
-    this.dockviewApi = dockviewComponent.api;
-    return this.dockviewApi;
+    api.onDidDrop((event: any) => {
+      console.log('[Dockview] Drop event:', event);
+      const sourceApi = (event as any).api as DockviewApi;
+      const dropped = (event as any).panel as {
+        id: string;
+        title: string;
+        component: string;
+        params: any;
+      };
+      if (sourceApi && dropped) {
+        console.log('[Dockview] Drop event source panel:', dropped);
+        const panel = sourceApi.getPanel(dropped.id);
+        if (panel) {
+          sourceApi.removePanel(panel);
+        }
+        this.addPanel(
+          {
+            id: dropped.id,
+            title: dropped.title,
+            component: dropped.component,
+            position: { referencePanel: undefined, direction: 'within' },
+            inputs: dropped.params,
+          },
+          containerId
+        );
+      }
+    });
+
+    this.dockviewComponents.set(containerId, dockviewComponent);
+    this.dockviewApis.set(containerId, api);
+    this.dockviewApi = api;
+
+    return api;
   }
 
   dispose(containerId: string): void {
@@ -245,7 +224,7 @@ export class DockviewService {
       },
     }));
 
-    const panel = dockviewApiRef?.addPanel({
+    dockviewApiRef?.addPanel({
       id: config.id,
       title: config.title,
       component: config.component,
@@ -256,20 +235,9 @@ export class DockviewService {
         headerActions: actionsWithDockviewApi,
       },
     });
-
-    const state: PanelState = {
-      id: config.id,
-      title: config.title,
-      active: true,
-      floating: false,
-      headerActions: actionsWithDockviewApi,
-    };
-
-    this.panelStateService.addPanel(state);
   }
 
   focusPanel(id: string): void {
     this.dockviewApi?.getPanel(id)?.focus();
-    this.panelStateService.activatePanel(id);
   }
 }
