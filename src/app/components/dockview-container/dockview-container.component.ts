@@ -26,7 +26,13 @@ export class DockviewDefaultTabRenderer {}
 })
 export class DockviewContainerComponent implements AfterViewInit, OnDestroy {
   @ViewChild('host', { static: true }) hostElementRef!: ElementRef<HTMLElement>;
+
   @Input() theme: DockviewTheme = themeVisualStudio; // set as default
+
+  // PATCH START: Add containerId input property
+  @Input() containerId: string = '';
+  // PATCH END
+
   @Output() initialized = new EventEmitter<DockviewApi>();
 
   constructor(private dockviewService: DockviewService) {}
