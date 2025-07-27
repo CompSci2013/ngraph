@@ -15,12 +15,17 @@ import {
   DockviewTheme,
   themeDracula,
   themeVisualStudio,
+  themeAbyss,
+  themeAbyssSpaced,
+  themeDark,
+  themeLight,
+  themeLightSpaced,
+  themeReplit,
 } from 'dockview-core';
 import { IContentRenderer } from 'dockview-core/dist/cjs/dockview/types';
 import { PanelStateService, PanelState } from './panel-state.service';
 import { HeaderActionsService, HeaderAction } from './header-actions.service';
 import { RendererRegistryService } from './render-registry.service';
-import { IDockviewPanel } from 'dockview-core';
 import { Injector } from '@angular/core';
 import {
   CreateComponentOptions,
@@ -29,6 +34,7 @@ import {
   DockviewPanelApi,
   DockviewApi,
   GroupPanelPartInitParameters,
+  IDockviewPanel,
 } from 'dockview-core';
 import { EventBusService } from './event-bus-service';
 import { group } from 'console';
@@ -36,8 +42,10 @@ import { title } from 'process';
 
 @Injectable({ providedIn: 'root' })
 export class DockviewService {
-  private dockviewComponent!: DockviewComponent;
+  // private dockviewComponent!: DockviewComponent;
   private dockviewApi!: DockviewApi;
+  private dockviewComponents: Map<string, DockviewComponent> = new Map();
+  private dockviewApis: Map<string, DockviewApi> = new Map();
 
   constructor(
     private panelStateService: PanelStateService,
@@ -48,12 +56,12 @@ export class DockviewService {
     private eventBus: EventBusService
   ) {}
 
-  initialize(container: HTMLElement, theme: DockviewTheme): DockviewApi {
-    // if (theme) {
-    //   document.body.classList.add(theme);
-    // }
-
-    this.dockviewComponent = new DockviewComponent(container, {
+  initialize(
+    container: HTMLElement,
+    theme: DockviewTheme,
+    containerId: string
+  ): DockviewApi {
+    const dockviewComponent = new DockviewComponent(container, {
       disableAutoResizing: false,
       floatingGroupBounds: 'boundedWithinViewport',
       theme: theme,
@@ -208,20 +216,25 @@ export class DockviewService {
       },
     });
 
-    this.dockviewApi = this.dockviewComponent.api;
+    this.dockviewComponents.set(containerId, dockviewComponent);
+    this.dockviewApis.set(containerId, dockviewComponent.api);
+
+    this.dockviewApi = dockviewComponent.api;
     return this.dockviewApi;
   }
 
-  dispose(): void {
-    this.dockviewComponent?.dispose();
+  dispose(containerId: string): void {
+    this.dockviewComponents.get(containerId)?.dispose();
+    this.dockviewComponents.delete(containerId);
+    this.dockviewApis.delete(containerId);
   }
 
-  addPanel(config: any): void {
+  addPanel(config: any, containerId: string): void {
     const headerActions = this.headerActionsService.getActions(
       config.component
     );
 
-    const dockviewApiRef = this.dockviewApi;
+    const dockviewApiRef = this.dockviewApis.get(containerId);
     const actionsWithDockviewApi = headerActions.map((action) => ({
       id: action.id,
       label: action.label,
@@ -232,7 +245,7 @@ export class DockviewService {
       },
     }));
 
-    const panel = this.dockviewApi.addPanel({
+    const panel = dockviewApiRef?.addPanel({
       id: config.id,
       title: config.title,
       component: config.component,

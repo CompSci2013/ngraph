@@ -40,17 +40,18 @@ export class DockviewContainerComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     const api = this.dockviewService.initialize(
       this.hostElementRef.nativeElement,
-      this.theme
+      this.theme,
+      this.containerId
     );
     this.initialized.emit(api);
   }
 
   ngOnDestroy(): void {
-    this.dockviewService.dispose();
+    this.dockviewService.dispose(this.containerId);
   }
 
   public addPanel(config: any): void {
-    this.dockviewService.addPanel(config);
+    this.dockviewService.addPanel(config, this.containerId);
   }
 
   public focusPanel(id: string): void {
